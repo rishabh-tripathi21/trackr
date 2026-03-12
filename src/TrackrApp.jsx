@@ -88,10 +88,30 @@ const SEED_HABITS = [
   {id:"h4",name:"Cold Shower",icon:"🚿",color:"#ff4d6d",streak:8,log:{}},
 ];
 const SEED_EXERCISES = [
-  {id:"e1",name:"Push-ups",unit:"reps",color:"#00ffd0"},
-  {id:"e2",name:"Running",unit:"km",color:"#ffd166"},
-  {id:"e3",name:"Pull-ups",unit:"reps",color:"#a78bfa"},
-  {id:"e4",name:"Plank",unit:"sec",color:"#ff4d6d"},
+  // PUSH — Mon / Thu
+  {id:"e1", name:"Incline Push-ups",    unit:"reps", color:"#00ffd0", day:"Push (Mon/Thu)"},
+  {id:"e2", name:"Normal Push-ups",     unit:"reps", color:"#00ffd0", day:"Push (Mon/Thu)"},
+  {id:"e3", name:"Bench Dips",          unit:"reps", color:"#00ffd0", day:"Push (Mon/Thu)"},
+  {id:"e4", name:"Pike Push-ups",       unit:"reps", color:"#00ffd0", day:"Push (Mon/Thu)"},
+  {id:"e5", name:"Plank",               unit:"sec",  color:"#00ffd0", day:"Push (Mon/Thu)"},
+  // PULL — Tue / Fri
+  {id:"e6", name:"Dead Hang",           unit:"sec",  color:"#a78bfa", day:"Pull (Tue/Fri)"},
+  {id:"e7", name:"Assisted Pull-ups",   unit:"reps", color:"#a78bfa", day:"Pull (Tue/Fri)"},
+  {id:"e8", name:"Negative Pull-ups",   unit:"reps", color:"#a78bfa", day:"Pull (Tue/Fri)"},
+  {id:"e9", name:"Australian Rows",     unit:"reps", color:"#a78bfa", day:"Pull (Tue/Fri)"},
+  {id:"e10",name:"Hanging Knee Raises", unit:"reps", color:"#a78bfa", day:"Pull (Tue/Fri)"},
+  // LEGS + CORE — Wed / Sat
+  {id:"e11",name:"Bodyweight Squats",   unit:"reps", color:"#ffd166", day:"Legs+Core (Wed/Sat)"},
+  {id:"e12",name:"Lunges",              unit:"reps", color:"#ffd166", day:"Legs+Core (Wed/Sat)"},
+  {id:"e13",name:"Glute Bridges",       unit:"reps", color:"#ffd166", day:"Legs+Core (Wed/Sat)"},
+  {id:"e14",name:"Calf Raises",         unit:"reps", color:"#ffd166", day:"Legs+Core (Wed/Sat)"},
+  {id:"e15",name:"Leg Raises",          unit:"reps", color:"#ffd166", day:"Legs+Core (Wed/Sat)"},
+  {id:"e16",name:"Russian Twists",      unit:"reps", color:"#ffd166", day:"Legs+Core (Wed/Sat)"},
+  // SKILL — Anyday
+  {id:"e17",name:"Hollow Body Hold",    unit:"sec",  color:"#ff4d6d", day:"Skill (Anyday)"},
+  {id:"e18",name:"Mountain Climbers",   unit:"reps", color:"#ff4d6d", day:"Skill (Anyday)"},
+  {id:"e19",name:"L-Sit Practice",      unit:"sec",  color:"#ff4d6d", day:"Skill (Anyday)"},
+  {id:"e20",name:"Wall Handstand",      unit:"sec",  color:"#ff4d6d", day:"Skill (Anyday)"},
 ];
 const SEED_WORKOUT_LOG = [
   {id:"w1",date:"2025-03-04",exerciseId:"e1",value:40,duration:20,kcal:120,month:"Mar 2025"},
@@ -258,7 +278,7 @@ function HabitsTab({habits,setHabits}){
 function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWater}){
   const [showAddEx,setShowAddEx]=useState(false);
   const [showLog,setShowLog]=useState(false);
-  const [exForm,setExForm]=useState({name:"",unit:"reps",color:"#00ffd0"});
+  const [exForm,setExForm]=useState({name:"",unit:"reps",color:"#00ffd0",day:"General"});
   const [logForm,setLogForm]=useState({exerciseId:"",value:"",duration:"",kcal:"",date:todayKey});
   const [selMonth,setSelMonth]=useState("Mar 2025");
   const [customMl,setCustomMl]=useState("");
@@ -367,16 +387,27 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
         {/* Exercise library */}
         <div className="card">
           <SH action={<button className="btn btn-p" onClick={()=>setShowAddEx(true)}>+ Add Exercise</button>}>Exercise Library</SH>
-          <div style={{display:"flex",flexDirection:"column",gap:8,maxHeight:220,overflowY:"auto"}}>
-            {exercises.map(ex=>(
-              <div key={ex.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:"1px solid var(--border)"}}>
-                <div style={{width:9,height:9,borderRadius:"50%",background:ex.color,flexShrink:0}}/>
-                <span style={{flex:1,fontFamily:"var(--ff)",fontWeight:600,fontSize:13}}>{ex.name}</span>
-                <span className="badge" style={{background:"var(--surface)",color:"var(--muted)"}}>{ex.unit}</span>
-                <button onClick={()=>delEx(ex.id)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",fontSize:14,padding:"0 4px"}}>✕</button>
-              </div>
-            ))}
+          <div style={{display:"flex",flexDirection:"column",gap:14,maxHeight:320,overflowY:"auto"}}>
             {exercises.length===0&&<div style={{color:"var(--muted)",fontSize:12}}>No exercises yet</div>}
+            {[...new Set(exercises.map(ex=>ex.day||"General"))].map(dayGroup=>{
+              const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d","General":"#4a566e"};
+              const groupColor=dayColors[dayGroup]||"#4a566e";
+              return(
+                <div key={dayGroup}>
+                  <div style={{fontSize:10,fontFamily:"var(--ff)",fontWeight:700,textTransform:"uppercase",letterSpacing:".08em",color:groupColor,marginBottom:6,paddingBottom:4,borderBottom:`1px solid ${groupColor}33`}}>
+                    {dayGroup}
+                  </div>
+                  {exercises.filter(ex=>(ex.day||"General")===dayGroup).map(ex=>(
+                    <div key={ex.id} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:"1px solid var(--border)"}}>
+                      <div style={{width:7,height:7,borderRadius:"50%",background:ex.color,flexShrink:0}}/>
+                      <span style={{flex:1,fontFamily:"var(--ff)",fontWeight:600,fontSize:12}}>{ex.name}</span>
+                      <span className="badge" style={{background:"var(--surface)",color:"var(--muted)"}}>{ex.unit}</span>
+                      <button onClick={()=>delEx(ex.id)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",fontSize:14,padding:"0 4px"}}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
         {/* Kcal chart */}
@@ -425,8 +456,15 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
 
       <Modal show={showAddEx} onClose={()=>setShowAddEx(false)} title="Add Exercise">
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          <input className="inp" placeholder="Exercise name" value={exForm.name} onChange={e=>setExForm(f=>({...f,name:e.target.value}))}/>
-          <div style={{display:"flex",gap:10}}>
+          <<input className="inp" placeholder="Exercise name" value={exForm.name} onChange={e=>setExForm(f=>({...f,name:e.target.value}))}/>
+<select className="inp" value={exForm.day||"General"} onChange={e=>setExForm(f=>({...f,day:e.target.value}))}>
+  <option value="Push (Mon/Thu)">💪 Push (Mon/Thu)</option>
+  <option value="Pull (Tue/Fri)">🏋️ Pull (Tue/Fri)</option>
+  <option value="Legs+Core (Wed/Sat)">🦵 Legs+Core (Wed/Sat)</option>
+  <option value="Skill (Anyday)">⚡ Skill (Anyday)</option>
+  <option value="General">📋 General</option>
+</select>
+<div style={{display:"flex",gap:10}}>
             <select className="inp" value={exForm.unit} onChange={e=>setExForm(f=>({...f,unit:e.target.value}))}>
               {["reps","sets","km","min","sec","kg"].map(u=><option key={u}>{u}</option>)}
             </select>
