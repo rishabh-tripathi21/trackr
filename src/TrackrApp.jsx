@@ -456,15 +456,15 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
 
       <Modal show={showAddEx} onClose={()=>setShowAddEx(false)} title="Add Exercise">
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          <<input className="inp" placeholder="Exercise name" value={exForm.name} onChange={e=>setExForm(f=>({...f,name:e.target.value}))}/>
-<select className="inp" value={exForm.day||"General"} onChange={e=>setExForm(f=>({...f,day:e.target.value}))}>
-  <option value="Push (Mon/Thu)">💪 Push (Mon/Thu)</option>
-  <option value="Pull (Tue/Fri)">🏋️ Pull (Tue/Fri)</option>
-  <option value="Legs+Core (Wed/Sat)">🦵 Legs+Core (Wed/Sat)</option>
-  <option value="Skill (Anyday)">⚡ Skill (Anyday)</option>
-  <option value="General">📋 General</option>
-</select>
-<div style={{display:"flex",gap:10}}>
+          <input className="inp" placeholder="Exercise name" value={exForm.name} onChange={e=>setExForm(f=>({...f,name:e.target.value}))}/>
+          <select className="inp" value={exForm.day||"General"} onChange={e=>setExForm(f=>({...f,day:e.target.value}))}>
+            <option value="Push (Mon/Thu)">💪 Push (Mon/Thu)</option>
+            <option value="Pull (Tue/Fri)">🏋️ Pull (Tue/Fri)</option>
+            <option value="Legs+Core (Wed/Sat)">🦵 Legs+Core (Wed/Sat)</option>
+            <option value="Skill (Anyday)">⚡ Skill (Anyday)</option>
+            <option value="General">📋 General</option>
+          </select>
+          <div style={{display:"flex",gap:10}}>
             <select className="inp" value={exForm.unit} onChange={e=>setExForm(f=>({...f,unit:e.target.value}))}>
               {["reps","sets","km","min","sec","kg"].map(u=><option key={u}>{u}</option>)}
             </select>
