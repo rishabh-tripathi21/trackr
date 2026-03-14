@@ -442,6 +442,341 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
         )}
       </div>
 
+      {/* ── Today's Workout ── */}
+      {(()=>{
+        const dayNum=new Date().getDay();
+        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+        const todayColor=dayColors[todayType];
+        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
+        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+        return(
+          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+            <SH action={
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+              </div>
+            }>🔥 Today's Workout</SH>
+            {todayExs.length===0?(
+              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
+                No exercises found. Add exercises using "+ Add Exercise" below.
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {todayExs.map((ex,i)=>{
+                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+                  return(
+                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
+                      </div>
+                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
+                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Today's Workout ── */}
+      {(()=>{
+        const dayNum=new Date().getDay();
+        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+        const todayColor=dayColors[todayType];
+        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
+        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+        return(
+          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+            <SH action={
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+              </div>
+            }>🔥 Today's Workout</SH>
+            {todayExs.length===0?(
+              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
+                No exercises found. Add exercises using "+ Add Exercise" below.
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {todayExs.map((ex,i)=>{
+                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+                  return(
+                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
+                      </div>
+                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
+                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Today's Workout ── */}
+      {(()=>{
+        const dayNum=new Date().getDay();
+        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+        const todayColor=dayColors[todayType];
+        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
+        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+        return(
+          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+            <SH action={
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+              </div>
+            }>🔥 Today's Workout</SH>
+            {todayExs.length===0?(
+              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
+                No exercises found. Add exercises using "+ Add Exercise" below.
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {todayExs.map((ex,i)=>{
+                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+                  return(
+                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
+                      </div>
+                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
+                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Today's Workout ── */}
+      {(()=>{
+        const dayNum=new Date().getDay();
+        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+        const todayColor=dayColors[todayType];
+        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
+        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+        return(
+          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+            <SH action={
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+              </div>
+            }>🔥 Today's Workout</SH>
+            {todayExs.length===0?(
+              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
+                No exercises found. Add exercises using "+ Add Exercise" below.
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {todayExs.map((ex,i)=>{
+                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+                  return(
+                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
+                      </div>
+                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
+                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+       {/* ── Today's Workout ── */}
+      {(()=>{
+        const dayNum=new Date().getDay();
+        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+        const todayColor=dayColors[todayType];
+        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
+        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+        return(
+          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+            <SH action={
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+              </div>
+            }>🔥 Today's Workout</SH>
+            {todayExs.length===0?(
+              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
+                No exercises found. Add exercises using "+ Add Exercise" below.
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {todayExs.map((ex,i)=>{
+                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+                  return(
+                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
+                      </div>
+                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
+                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Today's Workout ── */}
+      {(()=>{
+        const dayNum=new Date().getDay();
+        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+        const todayColor=dayColors[todayType];
+        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
+        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+        return(
+          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+            <SH action={
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+              </div>
+            }>🔥 Today's Workout</SH>
+            {todayExs.length===0?(
+              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
+                No exercises found. Add exercises using "+ Add Exercise" below.
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {todayExs.map((ex,i)=>{
+                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+                  return(
+                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
+                      </div>
+                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
+                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+       {/* ── Today's Workout ── */}
+      {(()=>{
+        const dayNum=new Date().getDay();
+        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+        const todayColor=dayColors[todayType];
+        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
+        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+        return(
+          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+            <SH action={
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+              </div>
+            }>🔥 Today's Workout</SH>
+            {todayExs.length===0?(
+              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
+                No exercises found. Add exercises using "+ Add Exercise" below.
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {todayExs.map((ex,i)=>{
+                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+                  return(
+                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
+                      </div>
+                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
+                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Today's Workout ── */}
+      {(()=>{
+        const dayNum=new Date().getDay();
+        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+        const todayColor=dayColors[todayType];
+        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
+        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+        return(
+          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+            <SH action={
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+              </div>
+            }>🔥 Today's Workout</SH>
+            {todayExs.length===0?(
+              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
+                No exercises found. Add exercises using "+ Add Exercise" below.
+              </div>
+            ):(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+                {todayExs.map((ex,i)=>{
+                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+                  return(
+                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
+                      </div>
+                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
+                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       <div className="two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
         {/* Exercise library */}
         <div className="card">
@@ -553,7 +888,24 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           <select className="inp" value={logForm.exerciseId} onChange={e=>setLogForm(f=>({...f,exerciseId:e.target.value}))}>
             <option value="">Select Exercise</option>
-            {exercises.map(ex=><option key={ex.id} value={ex.id}>{ex.name} ({ex.unit})</option>)}
+            {(()=>{
+              const dayNum=new Date().getDay();
+              const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+              const todayExs=exercises.filter(ex=>ex.day===todayType);
+              const otherExs=exercises.filter(ex=>ex.day!==todayType&&ex.day!=="Skill (Anyday)");
+              const skillExs=exercises.filter(ex=>ex.day==="Skill (Anyday)");
+              return(<>
+                {todayExs.length>0&&<optgroup label={`⭐ Today — ${todayType}`}>
+                  {todayExs.map(ex=><option key={ex.id} value={ex.id}>{ex.name} ({ex.unit})</option>)}
+                </optgroup>}
+                {skillExs.length>0&&<optgroup label="⚡ Skill (Anyday)">
+                  {skillExs.map(ex=><option key={ex.id} value={ex.id}>{ex.name} ({ex.unit})</option>)}
+                </optgroup>}
+                {otherExs.length>0&&<optgroup label="📋 Other Days">
+                  {otherExs.map(ex=><option key={ex.id} value={ex.id}>{ex.name} ({ex.unit})</option>)}
+                </optgroup>}
+              </>);
+            })()}
           </select>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
             <input className="inp" placeholder="Value" value={logForm.value} onChange={e=>setLogForm(f=>({...f,value:e.target.value}))}/>
@@ -1561,7 +1913,14 @@ export default function App(){
         const data = snap.data();
 
         setHabits(data.habits || []);
-        setExercises(data.exercises || []);
+        const loadedExercises = data.exercises && data.exercises.length > 0
+  ? data.exercises
+  : SEED_EXERCISES;
+setExercises(loadedExercises);
+// If exercises were empty, save the seed to Firestore too
+if (!data.exercises || data.exercises.length === 0) {
+  setDoc(ref, { exercises: SEED_EXERCISES }, { merge: true });
+}
         setWorkoutLog(data.workoutLog || []);
         setExpenses(data.expenses || []);
         setSources(data.sources || []);
