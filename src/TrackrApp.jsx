@@ -56,6 +56,17 @@ const GS = () => (
       .top-tabs{display:none!important}
       .two-col{grid-template-columns:1fr!important}
     }
+    [data-theme="light"]{
+      --bg:#f0f2f7;--surface:#ffffff;--card:#ffffff;--border:#e2e8f0;
+      --text:#1a202c;--muted:#718096;
+    }
+    [data-theme="light"] body{background:var(--bg);color:var(--text)}
+    [data-theme="light"] .card{box-shadow:0 1px 4px #0000000f}
+    [data-theme="light"] .inp{background:#f7f9fc;border-color:#e2e8f0;color:var(--text)}
+    [data-theme="light"] .tab-btn{color:var(--muted)}
+    [data-theme="light"] .tab-btn:hover{background:#e2e8f0}
+    [data-theme="light"] header{background:#f0f2f7f2!important}
+    [data-theme="light"] nav{background:#f0f2f7f2!important;border-color:#e2e8f0!important}
   `}</style>
 );
 
@@ -276,6 +287,59 @@ function HabitsTab({habits,setHabits}){
 // FITNESS
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ══════════════════════════════════════════════════════════════════════════════
+// TODAY'S WORKOUT CARD (with skill toggle)
+// ══════════════════════════════════════════════════════════════════════════════
+function TodayWorkoutCard({exercises,exercisePR,onLog}){
+  const [showSkills,setShowSkills]=useState(false);
+  const dayNum=new Date().getDay();
+  const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
+  const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
+  const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
+  const todayColor=dayColors[todayType];
+  const isSkillDay=todayType==="Skill (Anyday)";
+  const mainExs=exercises.filter(ex=>ex.day===todayType);
+  const skillExs=exercises.filter(ex=>ex.day==="Skill (Anyday)");
+  const displayExs=isSkillDay?skillExs:[...mainExs,...(showSkills?skillExs:[])];
+  const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
+  return(
+    <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
+      <SH action={
+        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+          {!isSkillDay&&(
+            <button className={`btn ${showSkills?"btn-p":"btn-g"}`} onClick={()=>setShowSkills(s=>!s)} style={{fontSize:10,padding:"5px 10px"}}>
+              ⚡ {showSkills?"Hide Skills":"+ Add Skills"}
+            </button>
+          )}
+          <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
+          <button className="btn btn-p" onClick={onLog} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
+        </div>
+      }>🔥 Today's Workout</SH>
+      {displayExs.length===0?(
+        <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>No exercises found. Add exercises using "+ Add Exercise" below.</div>
+      ):(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:8}}>
+          {displayExs.map((ex,i)=>{
+            const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
+            const isSkill=ex.day==="Skill (Anyday)";
+            return(
+              <div key={ex.id} className="fu" style={{animationDelay:`${i*30}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:5,position:"relative"}}>
+                {isSkill&&!isSkillDay&&<div style={{position:"absolute",top:6,right:8,fontSize:9,color:"#ff4d6d",fontFamily:"var(--ff)",fontWeight:700,textTransform:"uppercase"}}>skill</div>}
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
+                  {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>🏆 {pr}</span>}
+                </div>
+                <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12}}>{ex.name}</div>
+                <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── CUSTOM HOOK: FITNESS STATS ────────────────────────────────────────────────
 function useFitnessStats(exercises, workoutLog) {
   return useMemo(() => {
@@ -304,7 +368,7 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
   const [showAddEx,setShowAddEx]=useState(false);
   const [showLog,setShowLog]=useState(false);
   const [exForm,setExForm]=useState({name:"",unit:"reps",color:"#00ffd0",day:"General"});
-  const [logForm,setLogForm]=useState({exerciseId:"",value:"",duration:"",kcal:"",date:todayKey});
+  const [logForm,setLogForm]=useState({exerciseId:"",value:"",duration:"",kcal:"",date:todayKey,note:""});
   const [selMonth,setSelMonth]=useState(thisMonth);
   const [customMl,setCustomMl]=useState("");
 
@@ -335,7 +399,7 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
     if(!logForm.exerciseId||!logForm.value)return;
     const month=`${MONTHS[new Date(logForm.date).getMonth()]} ${new Date(logForm.date).getFullYear()}`;
     setWorkoutLog(l=>[...l,{id:uid(),...logForm,value:+logForm.value,duration:+logForm.duration||0,kcal:+logForm.kcal||0,month}]);
-    setLogForm({exerciseId:"",value:"",duration:"",kcal:"",date:todayKey});
+    setLogForm({exerciseId:"",value:"",duration:"",kcal:"",date:todayKey,note:""});
     setShowLog(false);
   };
   
@@ -443,46 +507,8 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
       </div>
 
       {/* ── Today's Workout ── */}
-      {(()=>{
-        const dayNum=new Date().getDay();
-        const todayType=dayNum===1||dayNum===4?"Push (Mon/Thu)":dayNum===2||dayNum===5?"Pull (Tue/Fri)":dayNum===3||dayNum===6?"Legs+Core (Wed/Sat)":"Skill (Anyday)";
-        const dayColors={"Push (Mon/Thu)":"#00ffd0","Pull (Tue/Fri)":"#a78bfa","Legs+Core (Wed/Sat)":"#ffd166","Skill (Anyday)":"#ff4d6d"};
-        const dayEmojis={"Push (Mon/Thu)":"💪","Pull (Tue/Fri)":"🏋️","Legs+Core (Wed/Sat)":"🦵","Skill (Anyday)":"⚡"};
-        const todayColor=dayColors[todayType];
-        const todayExs=exercises.filter(ex=>ex.day===todayType||ex.day==="Skill (Anyday)");
-        const sets={"Incline Push-ups":"3×12","Normal Push-ups":"3×8","Bench Dips":"3×10","Pike Push-ups":"3×6","Plank":"3×30sec","Dead Hang":"3×20sec","Assisted Pull-ups":"4×5","Negative Pull-ups":"3×5","Australian Rows":"3×10","Hanging Knee Raises":"3×10","Bodyweight Squats":"4×15","Lunges":"3×10","Glute Bridges":"3×12","Calf Raises":"3×26","Leg Raises":"3×10","Russian Twists":"3×20","Hollow Body Hold":"3×20sec","Mountain Climbers":"3×20","L-Sit Practice":"3×20sec","Wall Handstand":"5min"};
-        return(
-          <div className="card" style={{border:`1px solid ${todayColor}44`,background:`linear-gradient(135deg,var(--card),${todayColor}08)`}}>
-            <SH action={
-              <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                <span className="badge" style={{background:`${todayColor}22`,color:todayColor,fontSize:11,padding:"4px 12px"}}>{dayEmojis[todayType]} {todayType}</span>
-                <button className="btn btn-p" onClick={()=>setShowLog(true)} style={{fontSize:10,padding:"5px 12px"}}>+ Log Today</button>
-              </div>
-            }>🔥 Today's Workout</SH>
-            {todayExs.length===0?(
-              <div style={{color:"var(--muted)",fontSize:12,padding:"10px 0"}}>
-                No exercises found. Add exercises using "+ Add Exercise" below.
-              </div>
-            ):(
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
-                {todayExs.map((ex,i)=>{
-                  const pr=exercisePR.find(e=>e.id===ex.id)?.pr||0;
-                  return(
-                    <div key={ex.id} className="fu" style={{animationDelay:`${i*40}ms`,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${ex.color}33`,display:"flex",flexDirection:"column",gap:6}}>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:ex.color}}/>
-                        {pr>0&&<span className="badge" style={{background:"#00ffd022",color:"#00ffd0",fontSize:9}}>PR {pr}</span>}
-                      </div>
-                      <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:12,color:"var(--text)"}}>{ex.name}</div>
-                      <div style={{fontSize:11,color:ex.color,fontFamily:"var(--fm)"}}>{sets[ex.name]||`— ${ex.unit}`}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })()}
+      <TodayWorkoutCard exercises={exercises} exercisePR={exercisePR} onLog={()=>setShowLog(true)}/>
+
       <div className="two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
         {/* Exercise library */}
         <div className="card">
@@ -543,9 +569,9 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
         <SH action={<button className="btn btn-p" onClick={()=>setShowLog(true)}>+ Log Workout</button>}>Workout Log — {selMonth}</SH>
         <div style={{overflowX:"auto"}}>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-            <thead><tr>{["Date","Exercise","Value","Duration","Kcal",""].map(h=><th key={h} style={{textAlign:"left",color:"var(--muted)",paddingBottom:8,fontWeight:500,paddingRight:14}}>{h}</th>)}</tr></thead>
+            <thead><tr>{["Date","Exercise","Value","Duration","Kcal","Note",""].map(h=><th key={h} style={{textAlign:"left",color:"var(--muted)",paddingBottom:8,fontWeight:500,paddingRight:14}}>{h}</th>)}</tr></thead>
             <tbody>
-              {filtered.length===0&&<tr><td colSpan={6} style={{color:"var(--muted)",padding:"20px 0",textAlign:"center"}}>No workouts for {selMonth}</td></tr>}
+              {filtered.length===0&&<tr><td colSpan={7} style={{color:"var(--muted)",padding:"20px 0",textAlign:"center"}}>No workouts for {selMonth}</td></tr>}
               {filtered.map(w=>{
                 const ex=exercises.find(e=>e.id===w.exerciseId);
                 return(
@@ -555,6 +581,7 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
                     <td style={{padding:"8px 14px 8px 0"}}>{w.value} {ex?.unit}</td>
                     <td style={{padding:"8px 14px 8px 0"}}>{w.duration}m</td>
                     <td style={{padding:"8px 14px 8px 0",color:"#ff4d6d"}}>{w.kcal} kcal</td>
+                    <td style={{padding:"8px 14px 8px 0",color:"var(--muted)",fontStyle:"italic",maxWidth:120,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{w.note||"—"}</td>
                     <td><button onClick={()=>setWorkoutLog(l=>l.filter(x=>x.id!==w.id))} style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",fontSize:15}}>✕</button></td>
                   </tr>
                 );
@@ -619,6 +646,7 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
             <input className="inp" placeholder="Calories burned" value={logForm.kcal} onChange={e=>setLogForm(f=>({...f,kcal:e.target.value}))}/>
             <input className="inp" type="date" value={logForm.date} onChange={e=>setLogForm(f=>({...f,date:e.target.value}))}/>
           </div>
+          <input className="inp" placeholder="📝 Note (optional) — e.g. felt strong, new PR!" value={logForm.note||""} onChange={e=>setLogForm(f=>({...f,note:e.target.value}))}/>
           <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
             <button className="btn btn-g" onClick={()=>setShowLog(false)}>Cancel</button>
             <button className="btn btn-p" onClick={addLog}>Log It</button>
@@ -635,7 +663,11 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
 function ExpensesTab({expenses,setExpenses,sources,setSources}){
   const [showAdd,setShowAdd]=useState(false);
   const [showSrc,setShowSrc]=useState(false);
+  const [showBudget,setShowBudget]=useState(false);
   const [selMonth,setSelMonth]=useState(thisMonth);
+  const [searchQ,setSearchQ]=useState("");
+  const [filterCat,setFilterCat]=useState("All");
+  const [budgets,setBudgets]=useState({});
   const [form,setForm]=useState({desc:"",amount:"",cat:"Food",source:"",method:"Online",date:todayKey});
   const [srcForm,setSrcForm]=useState({name:"",icon:"💰",color:"#00ffd0",income:0});
 
@@ -654,8 +686,13 @@ function ExpensesTab({expenses,setExpenses,sources,setSources}){
     setSrcForm({name:"",icon:"💰",color:"#00ffd0",income:0});
   };
 
-  const filtered=expenses.filter(e=>e.month===selMonth);
-  const total=filtered.reduce((a,e)=>a+e.amount,0);
+  const allFiltered=expenses.filter(e=>e.month===selMonth);
+  const filtered=allFiltered.filter(e=>{
+    const matchSearch=!searchQ||e.desc.toLowerCase().includes(searchQ.toLowerCase());
+    const matchCat=filterCat==="All"||e.cat===filterCat;
+    return matchSearch&&matchCat;
+  });
+  const total=allFiltered.reduce((a,e)=>a+e.amount,0);
   const byCat=Object.entries(filtered.reduce((a,e)=>({...a,[e.cat]:(a[e.cat]||0)+e.amount}),{})).map(([cat,amount])=>({cat,amount})).sort((a,b)=>b.amount-a.amount);
 
   // ── Source-wise savings calculation ──────────────────────────────────────
@@ -681,12 +718,46 @@ function ExpensesTab({expenses,setExpenses,sources,setSources}){
     <div style={{display:"flex",flexDirection:"column",gap:18}}>
       <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
         <select className="inp" style={{maxWidth:140}} value={selMonth} onChange={e=>setSelMonth(e.target.value)}>
-          {[...new Set([...months,"Mar 2025"])].map(m=><option key={m}>{m}</option>)}
+          {[...new Set([...months,thisMonth])].map(m=><option key={m}>{m}</option>)}
         </select>
         <button className="btn btn-p" onClick={()=>setShowAdd(true)}>+ Add Expense</button>
-        <button className="btn btn-g" onClick={()=>setShowSrc(true)}>⚙ Manage Sources</button>
-        <button className="btn btn-g" style={{marginLeft:"auto"}} onClick={exportCSV}>⬇ Export CSV</button>
+        <button className="btn btn-g" onClick={()=>setShowSrc(true)}>⚙ Sources</button>
+        <button className="btn btn-g" onClick={()=>setShowBudget(true)}>🎯 Budgets</button>
+        <button className="btn btn-g" style={{marginLeft:"auto"}} onClick={exportCSV}>⬇ CSV</button>
       </div>
+
+      {/* Search + Filter */}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <input className="inp" placeholder="🔍 Search expenses..." value={searchQ}
+          onChange={e=>setSearchQ(e.target.value)} style={{flex:1,minWidth:140}}/>
+        <select className="inp" style={{maxWidth:150}} value={filterCat} onChange={e=>setFilterCat(e.target.value)}>
+          <option value="All">All Categories</option>
+          {Object.keys(CAT_COLORS).map(c=><option key={c}>{c}</option>)}
+        </select>
+      </div>
+
+      {/* Budget warnings */}
+      {Object.keys(budgets).length>0&&(
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {Object.entries(budgets).map(([cat,limit])=>{
+            const spent=allFiltered.filter(e=>e.cat===cat).reduce((a,e)=>a+e.amount,0);
+            const pct=Math.round(spent/limit*100);
+            if(!limit)return null;
+            return(
+              <div key={cat} style={{flex:1,minWidth:140,background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:`1px solid ${pct>=100?"#ff4d6d44":pct>=80?"#ffd16644":"var(--border)"}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:6}}>
+                  <span style={{color:CAT_COLORS[cat],fontFamily:"var(--ff)",fontWeight:700}}>{cat}</span>
+                  <span style={{color:pct>=100?"#ff4d6d":pct>=80?"#ffd166":"var(--muted)"}}>{pct}% {pct>=100?"🚨":pct>=80?"⚠️":""}</span>
+                </div>
+                <div style={{height:5,background:"var(--border)",borderRadius:3,overflow:"hidden"}}>
+                  <div style={{width:`${Math.min(100,pct)}%`,height:"100%",background:pct>=100?"#ff4d6d":pct>=80?"#ffd166":CAT_COLORS[cat],borderRadius:3,transition:"width .6s"}}/>
+                </div>
+                <div style={{fontSize:10,color:"var(--muted)",marginTop:4}}>₹{spent.toLocaleString()} / ₹{Number(limit).toLocaleString()}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Top stats */}
       <div className="g4" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
@@ -830,6 +901,11 @@ function ExpensesTab({expenses,setExpenses,sources,setSources}){
             <select className="inp" value={form.method} onChange={e=>setForm(f=>({...f,method:e.target.value}))}><option>Online</option><option>Cash</option></select>
             <input className="inp" type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} style={{gridColumn:"span 2"}}/>
           </div>
+          <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:12,color:"var(--muted)"}}>
+            <input type="checkbox" checked={form.recurring||false} onChange={e=>setForm(f=>({...f,recurring:e.target.checked}))}
+              style={{width:15,height:15,accentColor:"var(--accent)",cursor:"pointer"}}/>
+            🔁 Recurring monthly expense (auto-added on 1st)
+          </label>
           {!form.source&&<div style={{fontSize:11,color:"var(--gold)"}}>⚠ Please select an income source</div>}
           <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
             <button className="btn btn-g" onClick={()=>setShowAdd(false)}>Cancel</button>
@@ -868,6 +944,24 @@ function ExpensesTab({expenses,setExpenses,sources,setSources}){
             </div>
           </div>
         </div>
+      </Modal>
+
+      {/* Budget modal */}
+      <Modal show={showBudget} onClose={()=>setShowBudget(false)} title="🎯 Monthly Budgets">
+        <div style={{fontSize:12,color:"var(--muted)",marginBottom:14}}>Set spending limits per category. You'll see warnings when approaching the limit.</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {Object.keys(CAT_COLORS).map(cat=>(
+            <div key={cat} style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:10,height:10,borderRadius:"50%",background:CAT_COLORS[cat],flexShrink:0}}/>
+              <span style={{fontFamily:"var(--ff)",fontWeight:600,fontSize:12,width:110,color:CAT_COLORS[cat]}}>{cat}</span>
+              <input className="inp" placeholder="₹ limit (0 = off)" type="number"
+                value={budgets[cat]||""}
+                onChange={e=>setBudgets(b=>({...b,[cat]:e.target.value}))}
+                style={{flex:1}}/>
+            </div>
+          ))}
+        </div>
+        <button className="btn btn-p" style={{width:"100%",marginTop:16}} onClick={()=>setShowBudget(false)}>Save Budgets</button>
       </Modal>
     </div>
   );
@@ -909,7 +1003,7 @@ function TasksTab({tasks,setTasks}){
           <div key={group}>
             <div style={{fontFamily:"var(--ff)",fontWeight:700,fontSize:11,textTransform:"uppercase",letterSpacing:".09em",color:"var(--muted)",margin:"2px 0 8px"}}>{group}</div>
             {grouped.map((t,i)=>(
-              <div key={t.id} className="card fu" style={{animationDelay:`${i*40}ms`,display:"flex",alignItems:"center",gap:12,marginBottom:8,opacity:t.done?.5:1,transition:"opacity .2s"}}>
+              <div key={t.id} className="card fu" style={{animationDelay:`${i*40}ms`,display:"flex",alignItems:"center",gap:12,marginBottom:8,opacity: t.done ? 0.5 : 1,transition:"opacity .2s"}}>
                 <div onClick={()=>setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x))}
                   style={{width:20,height:20,borderRadius:5,border:`2px solid ${PRIO[t.priority]}`,background:t.done?PRIO[t.priority]:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all .15s"}}>
                   {t.done&&<span style={{color:"#07090e",fontSize:11,fontWeight:900}}>✓</span>}
@@ -1100,6 +1194,130 @@ function MonthlySummary({habits,workoutLog,expenses,tasks,sources,exercises,wate
 // ══════════════════════════════════════════════════════════════════════════════
 // OVERVIEW
 // ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+// QUICK ADD MODAL
+// ══════════════════════════════════════════════════════════════════════════════
+function QuickAdd({show,onClose,habits,setHabits,expenses,setExpenses,sources,water,setWater,tasks,setTasks}){
+  const [mode,setMode]=useState("habit");
+  const [habitId,setHabitId]=useState("");
+  const [expForm,setExpForm]=useState({desc:"",amount:"",cat:"Food",source:sources[0]?.id||"",method:"Online"});
+  const [taskTitle,setTaskTitle]=useState("");
+  const [waterMl,setWaterMl]=useState("250");
+  if(!show)return null;
+  const logHabit=()=>{
+    if(!habitId)return;
+    setHabits(hs=>hs.map(h=>h.id!==habitId?h:{...h,log:{...h.log,[todayKey]:1},streak:h.streak+(h.log[todayKey]?0:1)}));
+    onClose();
+  };
+  const logExpense=()=>{
+    if(!expForm.desc||!expForm.amount||!expForm.source)return;
+    const month=`${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}`;
+    setExpenses(ex=>[...ex,{id:uid(),...expForm,amount:+expForm.amount,date:todayKey,month}]);
+    onClose();
+  };
+  const logTask=()=>{
+    if(!taskTitle.trim())return;
+    setTasks(ts=>[...ts,{id:uid(),title:taskTitle,priority:"medium",due:"Today",done:false}]);
+    setTaskTitle("");onClose();
+  };
+  const logWater=()=>{
+    const v=parseInt(waterMl);
+    if(!v)return;
+    setWater(w=>({...w,[todayKey]:(w[todayKey]||0)+v}));
+    onClose();
+  };
+  return(
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:400}}>
+        <div style={{fontFamily:"var(--ff)",fontWeight:800,fontSize:18,marginBottom:16}}>⚡ Quick Add</div>
+        <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+          {[["habit","🔥 Habit"],["water","💧 Water"],["expense","💸 Expense"],["task","✅ Task"]].map(([m,l])=>(
+            <button key={m} className={`btn ${mode===m?"btn-p":"btn-g"}`} onClick={()=>setMode(m)} style={{fontSize:11}}>{l}</button>
+          ))}
+        </div>
+        {mode==="habit"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <select className="inp" value={habitId} onChange={e=>setHabitId(e.target.value)}>
+              <option value="">Select habit to mark done</option>
+              {habits.filter(h=>!h.log[todayKey]).map(h=><option key={h.id} value={h.id}>{h.icon} {h.name}</option>)}
+              {habits.filter(h=>h.log[todayKey]).length>0&&<optgroup label="✓ Already done today">{habits.filter(h=>h.log[todayKey]).map(h=><option key={h.id} value={h.id} disabled>{h.icon} {h.name}</option>)}</optgroup>}
+            </select>
+            <button className="btn btn-p" onClick={logHabit} disabled={!habitId}>Mark Done ✓</button>
+          </div>
+        )}
+        {mode==="water"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {[250,500,750,1000].map(ml=>(
+                <button key={ml} className={`btn ${waterMl===String(ml)?"btn-p":"btn-g"}`} onClick={()=>setWaterMl(String(ml))} style={{fontSize:12}}>{ml}ml</button>
+              ))}
+            </div>
+            <input className="inp" placeholder="Custom ml" value={waterMl} onChange={e=>setWaterMl(e.target.value)} type="number"/>
+            <button className="btn btn-p" onClick={logWater}>+ Add Water</button>
+          </div>
+        )}
+        {mode==="expense"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <input className="inp" placeholder="Description" value={expForm.desc} onChange={e=>setExpForm(f=>({...f,desc:e.target.value}))}/>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <input className="inp" placeholder="Amount ₹" value={expForm.amount} onChange={e=>setExpForm(f=>({...f,amount:e.target.value}))} type="number"/>
+              <select className="inp" value={expForm.cat} onChange={e=>setExpForm(f=>({...f,cat:e.target.value}))}>{Object.keys(CAT_COLORS).map(c=><option key={c}>{c}</option>)}</select>
+              <select className="inp" value={expForm.source} onChange={e=>setExpForm(f=>({...f,source:e.target.value}))}>
+                <option value="">Source *</option>{sources.map(s=><option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
+              </select>
+              <select className="inp" value={expForm.method} onChange={e=>setExpForm(f=>({...f,method:e.target.value}))}><option>Online</option><option>Cash</option></select>
+            </div>
+            <button className="btn btn-p" onClick={logExpense} disabled={!expForm.source||!expForm.desc||!expForm.amount}>Add Expense</button>
+          </div>
+        )}
+        {mode==="task"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <input className="inp" placeholder="Task title..." value={taskTitle} onChange={e=>setTaskTitle(e.target.value)} onKeyDown={e=>e.key==="Enter"&&logTask()} autoFocus/>
+            <button className="btn btn-p" onClick={logTask}>Add Task</button>
+          </div>
+        )}
+        <button className="btn btn-g" onClick={onClose} style={{width:"100%",marginTop:14}}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// WEEKLY REVIEW CARD
+// ══════════════════════════════════════════════════════════════════════════════
+function WeeklyReview({habits,workoutLog,expenses,tasks,water}){
+  const isSunday=new Date().getDay()===0;
+  const last7=Array.from({length:7},(_,i)=>{const d=new Date(TODAY);d.setDate(d.getDate()-6+i);return d.toISOString().slice(0,10);});
+  const habitRate=habits.length?Math.round(habits.reduce((a,h)=>a+(last7.filter(d=>h.log[d]).length/7),0)/habits.length*100):0;
+  const weekKcal=workoutLog.filter(w=>last7.includes(w.date)).reduce((a,w)=>a+w.kcal,0);
+  const weekSessions=new Set(workoutLog.filter(w=>last7.includes(w.date)).map(w=>w.date)).size;
+  const weekSpend=expenses.filter(e=>last7.includes(e.date)).reduce((a,e)=>a+e.amount,0);
+  const weekTasks=tasks.filter(t=>t.done).length;
+  const weekWater=last7.reduce((a,d)=>a+(water[d]||0),0);
+  if(!isSunday&&habitRate===0&&weekSessions===0)return null;
+  return(
+    <div className="card fu" style={{border:"1px solid #a78bfa44",background:"linear-gradient(135deg,var(--card),#0e0c1a)"}}>
+      <SH>📅 This Week's Review {isSunday&&<span className="badge" style={{background:"#a78bfa22",color:"#a78bfa",marginLeft:8}}>Sunday Recap</span>}</SH>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+        {[
+          {icon:"🔥",label:"Habit Rate",value:`${habitRate}%`,color:"#ff4d6d"},
+          {icon:"🏋️",label:"Workouts",value:`${weekSessions}d`,color:"#ffd166"},
+          {icon:"🔥",label:"Kcal Burned",value:weekKcal,color:"#00ffd0"},
+          {icon:"💸",label:"Spent",value:`₹${weekSpend.toLocaleString()}`,color:"#a78bfa"},
+          {icon:"✅",label:"Tasks Done",value:weekTasks,color:"#60c8ff"},
+          {icon:"💧",label:"Water Total",value:weekWater>=1000?`${(weekWater/1000).toFixed(1)}L`:`${weekWater}ml`,color:"#60c8ff"},
+        ].map(s=>(
+          <div key={s.label} style={{background:"var(--surface)",borderRadius:10,padding:"10px 12px",border:"1px solid var(--border)"}}>
+            <div style={{fontSize:16,marginBottom:4}}>{s.icon}</div>
+            <div style={{fontFamily:"var(--ff)",fontWeight:800,fontSize:16,color:s.color}}>{s.value}</div>
+            <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".06em"}}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Overview({habits,workoutLog,expenses,tasks,sources,water}){
   const monthEx=expenses.filter(e=>e.month===thisMonth);
   const waterToday=water[todayKey]||0;
@@ -1136,9 +1354,8 @@ function Overview({habits,workoutLog,expenses,tasks,sources,water}){
         <SC icon="🏦" label="Month Savings" value={`₹${Math.abs(savings).toLocaleString()}`} sub={savings>=0?"saved":"overspent"} color={savings>=0?"#00ffd0":"#ff4d6d"} delay={120}/>
         <SC icon="✅" label="Tasks Today" value={`${tasks.filter(t=>t.done).length}/${tasks.filter(t=>t.due==="Today").length}`} color="#a78bfa" delay={180}/>
       </div>
+      <WeeklyReview habits={habits} workoutLog={workoutLog} expenses={expenses} tasks={tasks} water={water}/>
       <div className="two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
-        <div className="card">
-          <SH>7-Day Activity</SH>
           <ResponsiveContainer width="100%" height={150}>
             <LineChart data={weekData}>
               <XAxis dataKey="day" tick={{fill:"#4a566e",fontSize:10,fontFamily:"DM Mono"}} axisLine={false} tickLine={false}/>
@@ -1196,7 +1413,6 @@ function Overview({habits,workoutLog,expenses,tasks,sources,water}){
           {tasks.filter(t=>!t.done&&t.due==="Today").length===0&&<div style={{color:"var(--muted)",fontSize:12}}>All done for today! 🎉</div>}
         </div>
       </div>
-    </div>
   );
 }
 
@@ -1575,6 +1791,8 @@ export default function App(){
   const [tasks,setTasks]=useState([]);
   const [water,setWater]=useState({});
   const [bodyweight, setBodyweight] = useState([]);
+  const [showQuick,setShowQuick]=useState(false);
+  const [theme,setTheme]=useState("dark");
   const dataLoaded = useRef(false);
   const [profile,setProfile]=useState({
     name:"",
@@ -1678,6 +1896,20 @@ useEffect(()=>{
 },[habits,exercises,workoutLog,expenses,sources,tasks,water,bodyweight]);
 
 
+  // AUTO-ADD RECURRING EXPENSES on 1st of month
+  useEffect(()=>{
+    if(!user||!dataLoaded.current)return;
+    const today=new Date();
+    if(today.getDate()!==1)return;
+    const month=`${MONTHS[today.getMonth()]} ${today.getFullYear()}`;
+    const recurring=expenses.filter(e=>e.recurring);
+    const alreadyAdded=expenses.some(e=>e.month===month&&e.recurringSource);
+    if(recurring.length>0&&!alreadyAdded){
+      const newExs=recurring.map(e=>({...e,id:uid(),date:todayKey,month,recurringSource:true}));
+      setExpenses(ex=>[...ex,...newExs]);
+    }
+  },[user,expenses]);
+
   // SAVE PROFILE
   const saveProfile = async () => {
 
@@ -1778,6 +2010,15 @@ useEffect(()=>{
   }
 })()}
             </div>
+
+            <button className="btn btn-g" style={{fontSize:16,padding:"5px 9px",minWidth:36}}
+              onClick={()=>{
+                const next=theme==="dark"?"light":"dark";
+                setTheme(next);
+                document.documentElement.setAttribute("data-theme",next);
+              }}>
+              {theme==="dark"?"☀️":"🌙"}
+            </button>
 
             <LogoutButton
               user={user}
