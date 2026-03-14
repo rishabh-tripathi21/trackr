@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   ResponsiveContainer, LineChart, Line, XAxis, YAxis,
@@ -275,12 +275,37 @@ function HabitsTab({habits,setHabits}){
 // ══════════════════════════════════════════════════════════════════════════════
 // FITNESS
 // ══════════════════════════════════════════════════════════════════════════════
-function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWater}){
+
+// ── CUSTOM HOOK: FITNESS STATS ────────────────────────────────────────────────
+function useFitnessStats(exercises, workoutLog) {
+  return useMemo(() => {
+    // 1. Calculate PRs
+    const exercisePR = exercises.map(ex => {
+      const logs = workoutLog.filter(w => w.exerciseId === ex.id);
+      const maxValue = logs.length ? Math.max(...logs.map(l => l.value)) : 0;
+      return { ...ex, pr: maxValue };
+    });
+
+    // 2. Calculate Streak
+    const workoutDays = [...new Set(workoutLog.map(w => w.date))].sort();
+    let streak = 0;
+    for (let i = workoutDays.length - 1; i > 0; i--) {
+      const today = new Date(workoutDays[i]);
+      const prev = new Date(workoutDays[i - 1]);
+      const diff = (today - prev) / (1000 * 60 * 60 * 24);
+      if (diff === 1) streak++; else break;
+    }
+
+    return { exercisePR, streak };
+  }, [exercises, workoutLog]);
+}
+
+function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWater,bodyweight,setBodyweight}){
   const [showAddEx,setShowAddEx]=useState(false);
   const [showLog,setShowLog]=useState(false);
   const [exForm,setExForm]=useState({name:"",unit:"reps",color:"#00ffd0",day:"General"});
   const [logForm,setLogForm]=useState({exerciseId:"",value:"",duration:"",kcal:"",date:todayKey});
-  const [selMonth,setSelMonth]=useState("Mar 2025");
+  const [selMonth,setSelMonth]=useState(thisMonth);
   const [customMl,setCustomMl]=useState("");
 
   // ── Water (ml/L, no goal) ──────────────────────────────────────────────────
@@ -302,7 +327,7 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
   const addEx=()=>{
     if(!exForm.name.trim())return;
     setExercises(ex=>[...ex,{id:uid(),...exForm}]);
-    setExForm({name:"",unit:"reps",color:"#00ffd0"});
+    setExForm({name:"",unit:"reps",color:"#00ffd0",day:"General"});
     setShowAddEx(false);
   };
   const delEx=id=>{setExercises(ex=>ex.filter(e=>e.id!==id));setWorkoutLog(l=>l.filter(w=>w.exerciseId!==id));};
@@ -313,20 +338,25 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
     setLogForm({exerciseId:"",value:"",duration:"",kcal:"",date:todayKey});
     setShowLog(false);
   };
+  
   const months=[...new Set(workoutLog.map(w=>w.month))].filter(Boolean).sort();
   const filtered=workoutLog.filter(w=>w.month===selMonth);
   const totalKcal=filtered.reduce((a,w)=>a+w.kcal,0);
   const totalMin=filtered.reduce((a,w)=>a+w.duration,0);
+  
+  // 🎯 CLEAN LOGIC: Using our new Custom Hook!
+  const { exercisePR, streak } = useFitnessStats(exercises, workoutLog);
   const kcalByDay=filtered.reduce((a,w)=>({...a,[w.date]:(a[w.date]||0)+w.kcal}),{});
   const chartData=Object.entries(kcalByDay).sort().map(([date,kcal])=>({date:date.slice(5),kcal}));
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:18}}>
-      <div className="g4" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
+      <div className="g4" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12}}>
         <SC icon="🏋️" label="Sessions" value={filtered.length} sub={selMonth} color="#00ffd0" delay={0}/>
         <SC icon="🔥" label="Calories" value={totalKcal} sub="burned" color="#ff4d6d" delay={60}/>
         <SC icon="⏱️" label="Total Time" value={`${totalMin}m`} sub="active" color="#ffd166" delay={120}/>
         <SC icon="💧" label="Water Today" value={displayWater} sub="tracked today" color="#60c8ff" delay={180}/>
+        <SC icon="🔥" label="Streak" value={`${streak}d`} sub="consecutive days" color="#ff4d6d" delay={240}/>
       </div>
 
       {/* ── Water Tracker ── */}
@@ -383,6 +413,35 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
         </div>
       </div>
 
+      {/* ── Bodyweight Tracker ── */}
+      <div className="card">
+        <SH>⚖️ Bodyweight Tracker</SH>
+        <input 
+          className="inp" 
+          placeholder="Log today's weight (kg) and press Enter..." 
+          onKeyDown={e => {
+            if(e.key === "Enter" && e.target.value) {
+              const w = parseFloat(e.target.value);
+              if(!w) return;
+              setBodyweight(b => [...b, { date: todayKey, weight: w }]);
+              e.target.value = "";
+            }
+          }} 
+        />
+        {bodyweight.length > 0 && (
+          <div style={{ height: 160, marginTop: 18 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={bodyweight}>
+                <XAxis dataKey="date" hide />
+                <YAxis domain={['dataMin-2', 'dataMax+2']} hide />
+                <Tooltip contentStyle={{background:"var(--surface)", border:"1px solid var(--border)", borderRadius:8, fontSize:12}} />
+                <Line type="monotone" dataKey="weight" stroke="#00ffd0" strokeWidth={3} dot={{fill:"#00ffd0", r:4}} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
       <div className="two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
         {/* Exercise library */}
         <div className="card">
@@ -401,7 +460,17 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
                     <div key={ex.id} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:"1px solid var(--border)"}}>
                       <div style={{width:7,height:7,borderRadius:"50%",background:ex.color,flexShrink:0}}/>
                       <span style={{flex:1,fontFamily:"var(--ff)",fontWeight:600,fontSize:12}}>{ex.name}</span>
-                      <span className="badge" style={{background:"var(--surface)",color:"var(--muted)"}}>{ex.unit}</span>
+                      
+                      {/* 🎯 PR Badge UI Added Here */}
+                      <div style={{display:"flex",gap:6}}>
+                        <span className="badge" style={{background:"var(--surface)",color:"var(--muted)"}}>{ex.unit}</span>
+                        {exercisePR.find(e=>e.id===ex.id)?.pr > 0 && (
+                          <span className="badge" style={{background:"linear-gradient(135deg,#00ffd022,#00ffd055)",color:"#00ffd0"}}>
+                            🏆 PR {exercisePR.find(e=>e.id===ex.id).pr}
+                          </span>
+                        )}
+                      </div>
+
                       <button onClick={()=>delEx(ex.id)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--muted)",fontSize:14,padding:"0 4px"}}>✕</button>
                     </div>
                   ))}
@@ -508,7 +577,7 @@ function FitnessTab({exercises,setExercises,workoutLog,setWorkoutLog,water,setWa
 function ExpensesTab({expenses,setExpenses,sources,setSources}){
   const [showAdd,setShowAdd]=useState(false);
   const [showSrc,setShowSrc]=useState(false);
-  const [selMonth,setSelMonth]=useState("Mar 2025");
+  const [selMonth,setSelMonth]=useState(thisMonth);
   const [form,setForm]=useState({desc:"",amount:"",cat:"Food",source:"",method:"Online",date:todayKey});
   const [srcForm,setSrcForm]=useState({name:"",icon:"💰",color:"#00ffd0",income:0});
 
@@ -813,7 +882,7 @@ function TasksTab({tasks,setTasks}){
 // MONTHLY SUMMARY
 // ══════════════════════════════════════════════════════════════════════════════
 function MonthlySummary({habits,workoutLog,expenses,tasks,sources,exercises,water}){
-  const [selMonth,setSelMonth]=useState("Mar 2025");
+  const [selMonth,setSelMonth]=useState(thisMonth);
   const [aiSummary,setAiSummary]=useState("");
   const [loading,setLoading]=useState(false);
 
@@ -1447,6 +1516,8 @@ export default function App(){
   const [sources,setSources]=useState([]);
   const [tasks,setTasks]=useState([]);
   const [water,setWater]=useState({});
+  const [bodyweight, setBodyweight] = useState([]);
+  const dataLoaded = useRef(false);
   const [profile,setProfile]=useState({
     name:"",
     email:"",
@@ -1496,6 +1567,7 @@ export default function App(){
         setSources(data.sources || []);
         setTasks(data.tasks || []);
         setWater(data.water || {});
+        setBodyweight(data.bodyweight || []);
 
         setProfile({
           name:data.profile?.name || "",
@@ -1513,6 +1585,7 @@ export default function App(){
           sources:[],
           tasks:[],
           water:{},
+          bodyweight:[],
           profile:{
             name:"",
             email:user.email,
@@ -1530,15 +1603,14 @@ export default function App(){
 
 
   // AUTO SAVE DATA — debounced, only after first load
-const dataLoaded = useRef(false);
 useEffect(()=>{
   if(!user || !dataLoaded.current) return;
   const ref = doc(db,"users",user.uid);
   const t = setTimeout(()=>{
-    setDoc(ref,{habits,exercises,workoutLog,expenses,sources,tasks,water},{merge:true});
+    setDoc(ref,{habits,exercises,workoutLog,expenses,sources,tasks,water,bodyweight},{merge:true});
   }, 1500);
   return ()=>clearTimeout(t);
-},[habits,exercises,workoutLog,expenses,sources,tasks,water]);
+},[habits,exercises,workoutLog,expenses,sources,tasks,water,bodyweight]);
 
 
   // SAVE PROFILE
@@ -1677,6 +1749,8 @@ useEffect(()=>{
         setWorkoutLog={setWorkoutLog}
         water={water}
         setWater={setWater}
+        bodyweight={bodyweight}
+        setBodyweight={setBodyweight}
       />
     }
 
